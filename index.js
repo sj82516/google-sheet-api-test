@@ -45,6 +45,7 @@ app.get('/google/oauth', (req, res) => {
 app.get('/google/oauth/callback', async (req, res) => {
     try {
         const code = req.query['code'];
+        // 先用code 換 access token
         let data = qs.stringify({
             code,
             client_id,
@@ -78,8 +79,19 @@ app.get('/google/oauth/callback', async (req, res) => {
 // -------------- OAuth 2.0 for Web Server Applications -------------------
 
 // -------------- OAuth 2.0 for Server-to-Server Applications -------------------
+/* 先到Google APIs Console > 憑證 創建 服務帳號，並下載 .json 金鑰
+ 到 Google IAM 將剛剛的服務帳號加入「Service Management 管理者」權限
+ 將服務帳號加到 Google表單中的共用帳號 > 編輯者 */
+
+/* Google to Google APIs Console > Certifications create service account and download .json key file.
+Go to Google IAM and grant 「Service Management Manager」 to the account created last step.
+Add the account to Google Sheet Sharing Setting > Editor
+*/
+
 const jwt = require('jsonwebtoken');
+// 就是服務帳號的 .json金鑰
 const googleServerKey = require("./test-f9099-a116e2dccb69.json")
+// 產生 jwt token
 const token = jwt.sign({
     "iss": googleServerKey.client_email,
     scope,
@@ -93,6 +105,8 @@ const token = jwt.sign({
     }
 })
 
+// 拿jwt 換 access token
+// take jwt to exchange access token
 function getAccessTokenByJWT() {
     let data = qs.stringify({
         grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
